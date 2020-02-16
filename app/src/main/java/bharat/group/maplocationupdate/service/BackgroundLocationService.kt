@@ -7,8 +7,11 @@ import android.content.Intent
 import android.content.IntentSender.SendIntentException
 import android.location.Location
 import android.location.LocationListener
-import android.os.*
+import android.os.Bundle
+import android.os.IBinder
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import bharat.group.maplocationupdate.model.APIUtils
 import bharat.group.maplocationupdate.model.LocationData
@@ -18,6 +21,12 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import java.util.*
 
 
@@ -36,6 +45,15 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
     private var mLocationCallback: LocationCallback? = null
     private var mLocationRequest: LocationRequest? = null
     private var mCurrentLocation: Location? = null
+
+    private var mMap: GoogleMap? = null
+
+    var mCurrLocationMarker: Marker? = null
+    private var currentLatitude :Double = 0.0
+    private var currentLongitude :Double = 0.0
+    var change = true
+    var Sender: LatLng? = null
+    var Reciver:LatLng? = null
 
     var locationData:LocationData = LocationData()
 
@@ -72,8 +90,8 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
 
     override fun onConnected(bundle: Bundle?) {
         mLocationRequest = LocationRequest()
-        mLocationRequest!!.interval = 40 * 1000.toLong()
-        mLocationRequest!!.fastestInterval = 20 * 1000.toLong()
+        mLocationRequest!!.interval = 600 * 1000.toLong()
+        mLocationRequest!!.fastestInterval = 300 * 1000.toLong()
         mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         val builder = LocationSettingsRequest.Builder()
@@ -115,6 +133,7 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
         buildGoogleApiClient()
     }
 
+
     override fun onLocationChanged(location: Location?) {
         Log.e(
             TAG_LOCATION,
@@ -136,6 +155,7 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
             APIUtils().sendLocation(locationData,applicationContext)
             Log.e(TAG_LOCATION, "Latitude : " + location.latitude + "\tLongitude : " + location.getLongitude())
         }
+
     }
 
     override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
@@ -185,5 +205,6 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
             Looper.myLooper()
         )
     }
+
 
 }

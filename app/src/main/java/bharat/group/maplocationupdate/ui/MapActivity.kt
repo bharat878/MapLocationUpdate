@@ -1,8 +1,10 @@
 package bharat.group.maplocationupdate.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import bharat.group.maplocationupdate.R
+import bharat.group.maplocationupdate.service.BackgroundLocationService
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -16,9 +18,17 @@ class MapActivity : FragmentActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
+        init()
+
+    }
+
+    private fun init() {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment!!.getMapAsync(this)
+
+        startService(Intent(this, BackgroundLocationService::class.java))
+
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {

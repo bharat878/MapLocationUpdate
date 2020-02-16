@@ -7,11 +7,11 @@ import android.content.Intent
 import android.content.IntentSender.SendIntentException
 import android.location.Location
 import android.location.LocationListener
-import android.os.Bundle
-import android.os.IBinder
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import bharat.group.maplocationupdate.model.APIUtils
+import bharat.group.maplocationupdate.model.LocationData
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
@@ -20,8 +20,8 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import java.util.*
 
-class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private val TAG = "BackgroundLocation"
     private val TAG_LOCATION = "TAG_LOCATION"
@@ -37,6 +37,8 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
     private var mLocationRequest: LocationRequest? = null
     private var mCurrentLocation: Location? = null
 
+    var locationData:LocationData = LocationData()
+
 
     override fun onCreate() {
         super.onCreate()
@@ -47,7 +49,7 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
         val delay = 300000
         Timer().scheduleAtFixedRate(object : TimerTask() {
             override fun run() { //your method
-                Log.d("finallocationretrofir", "$latitude -longitude-  $longitude")
+                Log.d("finallocationretrofit", "$latitude -longitude-  $longitude")
             }
         }, 6000, delay.toLong()) //put here time 1000 milliseconds=1 second
         buildGoogleApiClient()
@@ -70,8 +72,8 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
 
     override fun onConnected(bundle: Bundle?) {
         mLocationRequest = LocationRequest()
-        mLocationRequest!!.interval = 10 * 1000.toLong()
-        mLocationRequest!!.fastestInterval = 5 * 1000.toLong()
+        mLocationRequest!!.interval = 40 * 1000.toLong()
+        mLocationRequest!!.fastestInterval = 20 * 1000.toLong()
         mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         val builder = LocationSettingsRequest.Builder()
@@ -121,7 +123,9 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
 
         latitude = location.latitude.toString()
         longitude = location.longitude.toString()
-
+        locationData.time = System.currentTimeMillis().toString()
+        locationData.loc = arrayListOf(location.latitude,location.longitude)
+        locationData.name = "Bharat"
         if (latitude.equals("0.0", ignoreCase = true) && longitude.equals(
                 "0.0",
                 ignoreCase = true
@@ -129,6 +133,7 @@ class BackgroundLocationService : Service(), GoogleApiClient.ConnectionCallbacks
         ) {
             requestLocationUpdate()
         } else {
+            APIUtils().sendLocation(locationData,applicationContext)
             Log.e(TAG_LOCATION, "Latitude : " + location.latitude + "\tLongitude : " + location.getLongitude())
         }
     }
